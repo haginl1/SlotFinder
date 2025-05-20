@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vegas Slot Tracker</title>
+    <style>
+        :root {
+            --primary: #d4af37;
+            --secondary: #8a0303;
+            --dark: #1a1a1a;
+            --light: #f5f5f5;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark);
+            color: var(--light);
+            min-height: 100vh;
+        }
+        
+        header {
+            background-color: var(--secondary);
+            color: var(--primary);
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .card {
+            background-color: #2a2a2a;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h2 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        form {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        @media (min-width: 768px) {
+            form {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .full-width {
+                grid-column: span 2;
+            }
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #333;
+            color: var(--light);
+            font-size: 1rem;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: var(--dark);
+            border: none;
+            border-radius: 4px;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        button:hover {
+            background-color: #f2cc4d;
+            transform: translateY(-2px);
+        }
+        
+        .search-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .search-bar input {
+            flex: 1;
+        }
+        
+        .machine-list {
+            display: grid;
+            gap: 1rem;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        }
+        
+        .machine-card {
+            background-color: #333;
+            border-radius: 8px;
+            padding: 1rem;
+            border-left: 4px solid var(--primary);
+            position: relative;
+        }
+        
+        .machine-card h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+        
+        .machine-card p {
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+        
+        .machine-card .actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .machine-card .actions button {
+            padding: 0.5rem;
+            font-size: 0.85rem;
+        }
+        
+        .machine-card .delete {
+            background-color: var(--secondary);
+            color: var(--light);
+        }
+        
+        .filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .filters select {
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .no-machines {
+            text-align: center;
+            padding: 2rem;
+            font-size: 1.2rem;
+            color: #888;
+        }
+        
+        .jackpot-indicator {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background-color: var(--primary);
+            color: var(--dark);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        
+        .tag {
+            display: inline-block;
+            background-color: #444;
+            color: var(--light);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .machine-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 1rem;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background-color: #333;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .tab.active {
+            border-bottom-color: var(--primary);
+            background-color: #2a2a2a;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background-color: #333;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card p {
+            font-size: 0.9rem;
+            color: #bbb;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Vegas Slot Tracker</h1>
+        <p>Track your favorite slot machines across Las Vegas casinos</p>
+    </header>
+    
+    <div class="container">
+        <div class="tabs">
+            <div class="tab active" data-tab="dashboard">Dashboard</div>
+            <div class="tab" data-tab="add-machine">Add Machine</div>
+            <div class="tab" data-tab="stats">Stats</div>
+        </div>
+        
+        <div id="dashboard" class="tab-content active">
+            <div class="card">
+                <h2>Find Your Machines</h2>
+                <div class="search-bar">
+                    <input type="text" id="search-input" placeholder="Search by name, casino, or denomination...">
+                    <button id="search-button">Search</button>
+                </div>
+                
+                <div class="filters">
+                    <select id="casino-filter">
+                        <option value="">All Casinos</option>
+                        <option value="Bellagio">Bellagio</option>
+                        <option value="Caesars Palace">Caesars Palace</option>
+                        <option value="MGM Grand">MGM Grand</option>
+                        <option value="Aria">Aria</option>
+                        <option value="Cosmopolitan">Cosmopolitan</option>
+                        <option value="Venetian">Venetian</option>
+                        <option value="Wynn">Wynn</option>
+                        <option value="Encore">Encore</option>
+                        <option value="Mandalay Bay">Mandalay Bay</option>
+                        <option value="Luxor">Luxor</option>
+                    </select>
+                    
+                    <select id="denomination-filter">
+                        <option value="">All Denominations</option>
+                        <option value="Penny">Penny</option>
+                        <option value="Nickel">Nickel</option>
+                        <option value="Quarter">Quarter</option>
+                        <option value="Dollar">Dollar</option>
+                        <option value="High Limit">High Limit</option>
+                    </select>
+                    
+                    <select id="sort-by">
+                        <option value="name">Sort by Name</option>
+                        <option value="casino">Sort by Casino</option>
+                        <option value="lastPlayed">Sort by Last Played</option>
+                        <option value="winnings">Sort by Winnings</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="machine-list" id="machine-list">
+                <!-- Machine cards will be generated here -->
+                <div class="no-machines">No machines found. Add some using the "Add Machine" tab!</div>
+            </div>
+        </div>
+        
+        <div id="add-machine" class="tab-content">
+            <div class="card">
+                <h2>Add New Slot Machine</h2>
+                <form id="add-machine-form">
+                    <div>
+                        <label for="machine-name">Machine Name</label>
+                        <input type="text" id="machine-name" required placeholder="Buffalo Gold, Lightning Link, etc.">
+                    </div>
+                    
+                    <div>
+                        <label for="machine-casino">Casino</label>
+                        <select id="machine-casino" required>
+                            <option value="">Select Casino</option>
+                            <option value="Bellagio">Bellagio</option>
+                            <option value="Caesars Palace">Caesars Palace</option>
+                            <option value="MGM Grand">MGM Grand</option>
+                            <option value="Aria">Aria</option>
+                            <option value="Cosmopolitan">Cosmopolitan</option>
+                            <option value="Venetian">Venetian</option>
+                            <option value="Wynn">Wynn</option>
+                            <option value="Encore">Encore</option>
+                            <option value="Mandalay Bay">Mandalay Bay</option>
+                            <option value="Luxor">Luxor</option>
+                            <option value="Other">Other (specify in notes)</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="machine-location">Location in Casino</label>
+                        <input type="text" id="machine-location" placeholder="North entrance, high limit room, etc.">
+                    </div>
+                    
+                    <div>
+                        <label for="machine-denomination">Denomination</label>
+                        <select id="machine-denomination">
+                            <option value="Penny">Penny</option>
+                            <option value="Nickel">Nickel</option>
+                            <option value="Quarter">Quarter</option>
+                            <option value="Dollar">Dollar</option>
+                            <option value="High Limit">High Limit</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="machine-winnings">Winnings/Losses</label>
+                        <input type="number" id="machine-winnings" placeholder="Positive for winnings, negative for losses">
+                    </div>
+                    
+                    <div>
+                        <label for="machine-jackpot">Won Jackpot</label>
+                        <select id="machine-jackpot">
+                            <option value="false">No</option>
+                            <option value="true">Yes</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="machine-last-played">Last Played</label>
+                        <input type="date" id="machine-last-played">
+                    </div>
+                    
+                    <div>
+                        <label for="machine-rating">Rating (1-5)</label>
+                        <input type="number" id="machine-rating" min="1" max="5" value="3">
+                    </div>
+                    
+                    <div class="full-width">
+                        <label for="machine-notes">Notes</label>
+                        <textarea id="machine-notes" placeholder="Bonus features, bet strategy, personal experiences, etc."></textarea>
+                    </div>
+                    
+                    <div class="full-width">
+                        <button type="submit">Add Machine</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div id="stats" class="tab-content">
+            <div class="card">
+                <h2>Your Slot Machine Stats</h2>
+                
+                <div class="stat-cards">
+                    <div class="stat-card">
+                        <h3 id="total-machines">0</h3>
+                        <p>Total Machines</p>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <h3 id="total-casinos">0</h3>
+                        <p>Casinos Visited</p>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <h3 id="jackpot-count">0</h3>
+                        <p>Jackpots Won</p>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <h3 id="total-winnings">$0</h3>
+                        <p>Net Winnings/Losses</p>
+                    </div>
+                </div>
+                
+                <h2>Top Casinos</h2>
+                <div id="casino-stats" class="machine-list">
+                    <!-- Casino stats will be generated here -->
+                </div>
+                
+                <h2>Top Machines</h2>
+                <div id="machine-stats" class="machine-list">
+                    <!-- Machine stats will be generated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Store the slot machine data
+        let slotMachines = JSON.parse(localStorage.getItem('slotMachines')) || [];
+        
+        // DOM Elements
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const machineList = document.getElementById('machine-list');
+        const addMachineForm = document.getElementById('add-machine-form');
+        const searchInput = document.getElementById('search-input');
+        const searchButton = document.getElementById('search-button');
+        const casinoFilter = document.getElementById('casino-filter');
+        const denominationFilter = document.getElementById('denomination-filter');
+        const sortBy = document.getElementById('sort-by');
+        
+        // Stats elements
+        const totalMachinesEl = document.getElementById('total-machines');
+        const totalCasinosEl = document.getElementById('total-casinos');
+        const jackpotCountEl = document.getElementById('jackpot-count');
+        const totalWinningsEl = document.getElementById('total-winnings');
+        const casinoStatsEl = document.getElementById('casino-stats');
+        const machineStatsEl = document.getElementById('machine-stats');
+        
+        // Tab switching
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                // Reset active state
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+                
+                // Set active state
+                tab.classList.add('active');
+                document.getElementById(tabId).classList.add('active');
+                
+                // Update stats if needed
+                if (tabId === 'stats') {
+                    updateStats();
+                }
+            });
+        });
+        
+        // Add new machine
+        addMachineForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const newMachine = {
+                id: Date.now().toString(),
+                name: document.getElementById('machine-name').value,
+                casino: document.getElementById('machine-casino').value,
+                location: document.getElementById('machine-location').value,
+                denomination: document.getElementById('machine-denomination').value,
+                winnings: parseFloat(document.getElementById('machine-winnings').value) || 0,
+                jackpot: document.getElementById('machine-jackpot').value === 'true',
+                lastPlayed: document.getElementById('machine-last-played').value,
+                rating: parseInt(document.getElementById('machine-rating').value),
+                notes: document.getElementById('machine-notes').value
+            };
+            
+            slotMachines.push(newMachine);
+            saveAndRefresh();
+            
+            // Reset form
+            addMachineForm.reset();
+            
+            // Switch to dashboard
+            tabs[0].click();
+        });
+        
+        // Search and filter
+        searchButton.addEventListener('click', () => {
+            renderMachines();
+        });
+        
+        searchInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                renderMachines();
+            }
+        });
+        
+        casinoFilter.addEventListener('change', renderMachines);
+        denominationFilter.addEventListener('change', renderMachines);
+        sortBy.addEventListener('change', renderMachines);
+        
+        // Render machines with filters
+        function renderMachines() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const casinoTerm = casinoFilter.value;
+            const denominationTerm = denominationFilter.value;
+            const sortOption = sortBy.value;
+            
+            let filteredMachines = slotMachines.filter(machine => {
+                const matchesSearch = !searchTerm || 
+                    machine.name.toLowerCase().includes(searchTerm) || 
+                    machine.casino.toLowerCase().includes(searchTerm) || 
+                    machine.denomination.toLowerCase().includes(searchTerm) || 
+                    machine.notes.toLowerCase().includes(searchTerm);
+                
+                const matchesCasino = !casinoTerm || machine.casino === casinoTerm;
+                const matchesDenomination = !denominationTerm || machine.denomination === denominationTerm;
+                
+                return matchesSearch && matchesCasino && matchesDenomination;
+            });
+            
+            // Sort machines
+            filteredMachines.sort((a, b) => {
+                switch (sortOption) {
+                    case 'name':
+                        return a.name.localeCompare(b.name);
+                    case 'casino':
+                        return a.casino.localeCompare(b.casino);
+                    case 'lastPlayed':
+                        return new Date(b.lastPlayed) - new Date(a.lastPlayed);
+                    case 'winnings':
+                        return b.winnings - a.winnings;
+                    default:
+                        return 0;
+                }
+            });
+            
+            // Clear the machine list
+            machineList.innerHTML = '';
+            
+            if (filteredMachines.length === 0) {
+                machineList.innerHTML = '<div class="no-machines">No machines found matching your criteria</div>';
+                return;
+            }
+            
+            // Create machine cards
+            filteredMachines.forEach(machine => {
+                const machineCard = document.createElement('div');
+                machineCard.className = 'machine-card';
+                
+                const formattedWinnings = machine.winnings >= 0 ? 
+                    `+$${machine.winnings.toFixed(2)}` : 
+                    `-$${Math.abs(machine.winnings).toFixed(2)}`;
+                
+                const winningsColor = machine.winnings >= 0 ? 'color: #4caf50;' : 'color: #f44336;';
+                
+                machineCard.innerHTML = `
+                    <h3>${machine.name}</h3>
+                    <p><strong>Casino:</strong> ${machine.casino}</p>
+                    <p><strong>Location:</strong> ${machine.location || 'Not specified'}</p>
+                    <p><strong>Denomination:</strong> ${machine.denomination}</p>
+                    <p><strong>Winnings:</strong> <span style="${winningsColor}">${formattedWinnings}</span></p>
+                    ${machine.lastPlayed ? `<p><strong>Last Played:</strong> ${formatDate(machine.lastPlayed)}</p>` : ''}
+                    <p><strong>Rating:</strong> ${'⭐'.repeat(machine.rating)}</p>
+                    ${machine.notes ? `<p><strong>Notes:</strong> ${machine.notes}</p>` : ''}
+                    <div class="actions">
+                        <button class="edit" data-id="${machine.id}">Edit</button>
+                        <button class="delete" data-id="${machine.id}">Delete</button>
+                    </div>
+                `;
+                
+                if (machine.jackpot) {
+                    const jackpotIndicator = document.createElement('div');
+                    jackpotIndicator.className = 'jackpot-indicator';
+                    jackpotIndicator.textContent = 'JACKPOT WON!';
+                    machineCard.appendChild(jackpotIndicator);
+                }
+                
+                machineList.appendChild(machineCard);
+                
+                // Add event listeners for edit and delete buttons
+                machineCard.querySelector('.edit').addEventListener('click', () => editMachine(machine.id));
+                machineCard.querySelector('.delete').addEventListener('click', () => deleteMachine(machine.id));
+            });
+        }
+        
+        // Edit machine
+        function editMachine(id) {
+            const machine = slotMachines.find(m => m.id === id);
+            
+            if (!machine) return;
+            
+            // Fill the form with machine data
+            document.getElementById('machine-name').value = machine.name;
+            document.getElementById('machine-casino').value = machine.casino;
+            document.getElementById('machine-location').value = machine.location || '';
+            document.getElementById('machine-denomination').value = machine.denomination;
+            document.getElementById('machine-winnings').value = machine.winnings;
+            document.getElementById('machine-jackpot').value = machine.jackpot.toString();
+            document.getElementById('machine-last-played').value = machine.lastPlayed || '';
+            document.getElementById('machine-rating').value = machine.rating;
+            document.getElementById('machine-notes').value = machine.notes || '';
+            
+            // Switch to add machine tab
+            tabs[1].click();
+            
+            // Replace the submit button with update button
+            const submitButton = addMachineForm.querySelector('button[type="submit"]');
+            submitButton.textContent = 'Update Machine';
+            
+            // Remove old event listeners
+            const newForm = addMachineForm.cloneNode(true);
+            addMachineForm.parentNode.replaceChild(newForm, addMachineForm);
+            
+            // Add new event listener
+            newForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                // Update machine data
+                machine.name = document.getElementById('machine-name').value;
+                machine.casino = document.getElementById('machine-casino').value;
+                machine.location = document.getElementById('machine-location').value;
+                machine.denomination = document.getElementById('machine-denomination').value;
+                machine.winnings = parseFloat(document.getElementById('machine-winnings').value) || 0;
+                machine.jackpot = document.getElementById('machine-jackpot').value === 'true';
+                machine.lastPlayed = document.getElementById('machine-last-played').value;
+                machine.rating = parseInt(document.getElementById('machine-rating').value);
+                machine.notes = document.getElementById('machine-notes').value;
+                
+                saveAndRefresh();
+                
+                // Reset form
+                newForm.reset();
+                
+                // Reset the button text
+                newForm.querySelector('button[type="submit"]').textContent = 'Add Machine';
+                
+                // Switch back to dashboard
+                tabs[0].click();
+            });
+            
+            // Update the form reference
+            addMachineForm = newForm;
+        }
+        
+        // Delete machine
+        function deleteMachine(id) {
+            if (confirm('Are you sure you want to delete this machine?')) {
+                slotMachines = slotMachines.filter(machine => machine.id !== id);
+                saveAndRefresh();
+            }
+        }
+        
+        // Save and refresh
+        function saveAndRefresh() {
+            localStorage.setItem('slotMachines', JSON.stringify(slotMachines));
+            renderMachines();
+            updateStats();
+        }
+        
+        // Update stats
+        function updateStats() {
+            if (slotMachines.length === 0) {
+                totalMachinesEl.textContent = '0';
+                totalCasinosEl.textContent = '0';
+                jackpotCountEl.textContent = '0';
+                totalWinningsEl.textContent = '$0';
+                casinoStatsEl.innerHTML = '<div class="no-machines">No data available</div>';
+                machineStatsEl.innerHTML = '<div class="no-machines">No data available</div>';
+                return;
+            }
+            
+            // Basic stats
+            totalMachinesEl.textContent = slotMachines.length;
+            
+            const uniqueCasinos = [...new Set(slotMachines.map(m => m.casino))];
+            totalCasinosEl.textContent = uniqueCasinos.length;
+            
+            const jackpotCount = slotMachines.filter(m => m.jackpot).length;
+            jackpotCountEl.textContent = jackpotCount;
+            
+            const totalWinnings = slotMachines.reduce((sum, m) => sum + m.winnings, 0);
+            totalWinningsEl.textContent = totalWinnings >= 0 ? 
+                `+$${totalWinnings.toFixed(2)}` : 
+                `-$${Math.abs(totalWinnings).toFixed(2)}`;
+            totalWinningsEl.style.color = totalWinnings >= 0 ? '#4caf50' : '#f44336';
+            
+            // Casino stats
+            casinoStatsEl.innerHTML = '';
+            
+            const casinoData = {};
+            slotMachines.forEach(machine => {
+                if (!casinoData[machine.casino]) {
+                    casinoData[machine.casino] = {
+                        count: 0,
+                        winnings: 0,
+                        jackpots: 0
+                    };
+                }
+                
+                casinoData[machine.casino].count++;
+                casinoData[machine.casino].winnings += machine.winnings;
+                if (machine.jackpot) casinoData[machine.casino].jackpots++;
+            });
+            
+            Object.entries(casinoData)
+                .sort((a, b) => b[1].count - a[1].count)
+                .slice(0, 5)
+                .forEach(([casino, data]) => {
+                    const casinoCard = document.createElement('div');
+                    casinoCard.className = 'machine-card';
+                    
+                    const formattedWinnings = data.winnings >= 0 ? 
+                        `+$${data.winnings.toFixed(2)}` : 
+                        `-$${Math.abs(data.winnings).toFixed(2)}`;
+                    
+                    const winningsColor = data.winnings >= 0 ? 'color: #4caf50;' : 'color: #f44336;';
+                    
+                    casinoCard.innerHTML = `
+                        <h3>${casino}</h3>
+                        <p><strong>Machines:</strong> ${data.count}</p>
+                        <p><strong>Winnings:</strong> <span style="${winningsColor}">${formattedWinnings}</span></p>
+                        <p><strong>Jackpots Won:</strong> ${data.jackpots}</p>
+                    `;
+                    
+                    casinoStatsEl.appendChild(casinoCard);
+                });
+            
+            // Machine stats
+            machineStatsEl.innerHTML = '';
+            
+            // Sort by winnings
+            const topMachines = [...slotMachines]
+                .sort((a, b) => b.winnings - a.winnings)
+                .slice(0, 5);
+            
+            topMachines.forEach(machine => {
+                const machineCard = document.createElement('div');
+                machineCard.className = 'machine-card';
+                
+                const formattedWinnings = machine.winnings >= 0 ? 
+                    `+$${machine.winnings.toFixed(2)}` : 
+                    `-$${Math.abs(machine.winnings).toFixed(2)}`;
+                
+                const winningsColor = machine.winnings >= 0 ? 'color: #4caf50;' : 'color: #f44336;';
+                
+                machineCard.innerHTML = `
+                    <h3>${machine.name}</h3>
+                    <p><strong>Casino:</strong> ${machine.casino}</p>
+                    <p><strong>Winnings:</strong> <span style="${winningsColor}">${formattedWinnings}</span></p>
+                    <p><strong>Rating:</strong> ${'⭐'.repeat(machine.rating)}</p>
+                `;
+                
+                if (machine.jackpot) {
+                    const jackpotIndicator = document.createElement('div');
+                    jackpotIndicator.className = 'jackpot-indicator';
+                    jackpotIndicator.textContent = 'JACKPOT WON!';
+                    machineCard.appendChild(jackpotIndicator);
+                }
+                
+                machineStatsEl.appendChild(machineCard);
+            });
+        }
+        
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+        
+        // Initial render
+        renderMachines();
+        updateStats();
+    </script>
+</body>
+</html>
